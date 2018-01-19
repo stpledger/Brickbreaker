@@ -1,0 +1,13 @@
+NOTE: I didn't find the correct page for the project specifications before creating my plan, only the plan page on the website, so I'm updating my plan here with what I now know.
+
+I thought the Breakout version published by Bigben Interactive S.A. in 2016 called Brick Breaker was very interesting. The game incorporates items such as fireballs and magnets, penalizes the player for hitting the "trap" bricks, increases the score more with combo hits, and has moving bricks.
+
+I intend to build levels that have some sort of shapes to them, such as levels with sections of the bricks carved out into interesting patterns like X's or O's. I also intend to build levels where the power-ups are largely surrounded by bad blocks so that there is a challenge to obtaining them. I've also pushed some very first draft ideas I have for the levels to gitlab.
+
+I want to create bomb blocks, lightning blocks, and red/bad blocks. Bomb blocks will do exactly what you would think, explode and take out the blocks in their area. Lightning blocks will zap an entire row of blocks. Red/bad blocks will penalize the player by deducting a certain number of points from their score.
+
+For powerups, I want to create one that slows time, one that extends the paddle, and one that shoots another ball into play.
+
+For game cheats, I will allow the user to press the number keys to go to the corresponding level, and when the player presses the R key they will restart the level they were on.
+
+I also intend to add an option to play with two "paddles" at the bottom, one controlled with the arrow keys and one controlled with the "a" and "d" keys while playing with two balls at once. I think this is a substantial addition because it adds a whole new level of complexity to follow two balls at once and react with both hands.
