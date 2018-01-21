@@ -26,7 +26,8 @@ public class RunGame extends Application {
 	public static final String BRICK1_IMAGE = "brick1.gif";
 	public static final String BRICK2_IMAGE = "brick3.gif";
 	public static final String BRICK3_IMAGE = "brick5.gif";
-	
+	public static final String BRICK4_IMAGE = "brick10.gif";
+
 	// values needed globally
 	private Scene[] myScenes = new Scene[3];
 	private ImageView[] paddle = new ImageView[2];
@@ -44,6 +45,7 @@ public class RunGame extends Application {
 	private Image brick1i;
 	private Image brick2i;
 	private Image brick3i;
+	private Image brick4i;
 	
 	
 	@Override
@@ -73,13 +75,17 @@ public class RunGame extends Application {
 		brick1i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK1_IMAGE));
 		brick2i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK2_IMAGE));
 		brick3i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK3_IMAGE));
+		brick4i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK4_IMAGE));
 		Ball[0] = new ImageView(image);
 		Ball[1] = new ImageView(image);
 		paddle[0] = new ImageView(paddlei);
 		
 		for (int i = 0; i < SIZE/70 ; i++){
 			for(int j = 0; j < 10; j++){
-				if(i == 5 & j == 9){
+				if(i == 5 & j == 8){
+					brick[i][j] = new ImageView(brick2i);
+				}
+				else if(i == 5 & j == 6){
 					brick[i][j] = new ImageView(brick3i);
 				}
 				else{
@@ -146,6 +152,10 @@ public class RunGame extends Application {
     				    	}
     				    	else if(brick[i][j].getImage() == brick3i){
     				    		lightning(j);
+    				    	}
+    				    	else if(brick[i][j].getImage() == brick4i){
+    				    		myGroup.getChildren().remove(brick[i][j]);
+    				    		brick[i][j] = null;
     				    	}
     				    	else{
     				    		myGroup.getChildren().remove(brick[i][j]);
