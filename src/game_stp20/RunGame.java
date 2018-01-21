@@ -24,8 +24,10 @@ public class RunGame extends Application {
 	public static final String BOUNCER_IMAGE = "ball.gif";
 	public static final String paddle_IMAGE = "paddle.gif";
 	public static final String BRICK1_IMAGE = "brick1.gif";
+	public static final String BRICK2_IMAGE = "brick3.gif";
+	public static final String BRICK3_IMAGE = "brick5.gif";
 	
-	// values that could change
+	// values needed globally
 	private Scene[] myScenes = new Scene[3];
 	private ImageView[] paddle = new ImageView[2];
 	private ImageView[] Ball = new ImageView[2];
@@ -39,6 +41,9 @@ public class RunGame extends Application {
 	private Group myGroup;
 	private boolean hitHorizontal = false;
 	private boolean hitVertical = false;
+	private Image brick1i;
+	private Image brick2i;
+	private Image brick3i;
 	
 	
 	@Override
@@ -65,14 +70,21 @@ public class RunGame extends Application {
 		// make shapes
 		Image image = new Image(getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE));
 		Image paddlei = new Image(getClass().getClassLoader().getResourceAsStream(paddle_IMAGE));
-		Image bricki = new Image(getClass().getClassLoader().getResourceAsStream(BRICK1_IMAGE));
+		brick1i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK1_IMAGE));
+		brick2i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK2_IMAGE));
+		brick3i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK3_IMAGE));
 		Ball[0] = new ImageView(image);
 		Ball[1] = new ImageView(image);
 		paddle[0] = new ImageView(paddlei);
 		
 		for (int i = 0; i < SIZE/70 ; i++){
 			for(int j = 0; j < 10; j++){
-				brick[i][j] = new ImageView(bricki);
+				if(i == 5 & j == 9){
+					brick[i][j] = new ImageView(brick3i);
+				}
+				else{
+					brick[i][j] = new ImageView(brick1i);
+				}
 				brick[i][j].setX(70 * i);
 				brick[i][j].setY(20 * j + 75);
 				myGroup.getChildren().add(brick[i][j]);
@@ -82,11 +94,11 @@ public class RunGame extends Application {
 		// set locations of objects
 		paddle[0].setX(width / 2 - paddle[0].getBoundsInLocal().getWidth() / 2);
 		paddle[0].setY(SIZE - 75);
-		Ball[0].setX(width / 2 - Ball[0].getBoundsInLocal().getWidth() / 2);
+		Ball[0].setX(width / 2 - Ball[0].getBoundsInLocal().getWidth() / 2 + 25);
 		Ball[0].setY(height / 2 - Ball[0].getBoundsInLocal().getHeight() / 2);
 		// set ball starting velocity
-		Xvelocity[0] = random.nextInt(120) - 60;
-		Yvelocity[0] = -150;
+		Xvelocity[0] = 0; //random.nextInt(120) - 60;
+		Yvelocity[0] = 150;
 		// add objects to the group
 		myGroup.getChildren().add(Ball[0]);
 		myGroup.getChildren().add(paddle[0]);
@@ -107,32 +119,39 @@ public class RunGame extends Application {
     	// check for collision with paddle[0]
     	if (paddle[0].getBoundsInParent().intersects(Ball[0].getBoundsInParent())){
     		Yvelocity[0] = Yvelocity[0] * -1;
-    		Xvelocity[0] = random.nextInt(280) - 140; 		
+    		//Xvelocity[0] = random.nextInt(280) - 140; 		
     	}
     	// check for brick collision
-    	if(Ball[0].getY() < 300){
+    	brickCollision();
+        // update attributes
+        Ball[0].setX(Ball[0].getX() + Xvelocity[0] * elapsedTime);
+        Ball[0].setY(Ball[0].getY() + Yvelocity[0] * elapsedTime); 
+        
+	}
+	
+	private void brickCollision(){
+		if(Ball[0].getY() < 300){
     		for (int i = 0; i < 10; i++){
     			for(int j = 0; j < 10; j++){
     				if (brick[i][j] != null){ // thought you could do these if statements inline but got null pointer exception even though null check was first
     					if (brick[i][j].getBoundsInParent().intersects(Ball[0].getBoundsInParent())){
-    						/*System.out.print("Ball: ");
-    						System.out.println(Ball[0].getBoundsInParent());
-    						System.out.print("Brick: ");
-    						System.out.println(brick[i][j].getBoundsInParent());*/
-    						double left = Ball[0].getBoundsInParent().getMinX();
-    						double right = Ball[0].getBoundsInParent().getMaxX();
-    						double top = Ball[0].getBoundsInParent().getMinY();
-    						double bottom = Ball[0].getBoundsInParent().getMaxY();
-    						double left2 = brick[i][j].getBoundsInParent().getMinX();
-    						double right2 = brick[i][j].getBoundsInParent().getMaxX();
-    						double top2 = brick[i][j].getBoundsInParent().getMinY();
-    						double bottom2 = brick[i][j].getBoundsInParent().getMaxY();
-    						/*System.out.println(left);
-    						System.out.println(right);*/
-    						hitHorizontal = (left <= left2 - 2.5 & Xvelocity[0] > 0) | (right >= right2 + 2.5 & Xvelocity[0] < 0);
-    				    	hitVertical = (top <= top2 - 2.5 & Yvelocity[0] > 0) | (bottom >= bottom2 + 2.5 & Yvelocity[0] < 0);
-    						myGroup.getChildren().remove(brick[i][j]);
-    						brick[i][j] = null;
+    						hitHorizontal = (Ball[0].getBoundsInParent().getMinX() <= brick[i][j].getBoundsInParent().getMinX() - 2.5 
+    								& Xvelocity[0] > 0) | (Ball[0].getBoundsInParent().getMaxX() >= brick[i][j].getBoundsInParent().getMaxX()
+    								+ 2.5 & Xvelocity[0] < 0);
+    				    	hitVertical = (Ball[0].getBoundsInParent().getMinY() <= brick[i][j].getBoundsInParent().getMinY() - 2.5 
+    				    			& Yvelocity[0] > 0) | (Ball[0].getBoundsInParent().getMaxY() >= brick[i][j].getBoundsInParent().getMaxY()
+    				    			+ 2.5 & Yvelocity[0] < 0);
+    				    	if(brick[i][j].getImage() == brick2i){
+    				    		bomb(i, j);
+    				    	}
+    				    	else if(brick[i][j].getImage() == brick3i){
+    				    		lightning(j);
+    				    	}
+    				    	else{
+    				    		myGroup.getChildren().remove(brick[i][j]);
+    				    		brick[i][j] = null;
+    				    	}
+    						
     					}
 					}
 				}
@@ -147,10 +166,28 @@ public class RunGame extends Application {
     		Yvelocity[0] = Yvelocity[0] * -1;
     		hitVertical = false;
     	}
-        // update attributes
-        Ball[0].setX(Ball[0].getX() + Xvelocity[0] * elapsedTime);
-        Ball[0].setY(Ball[0].getY() + Yvelocity[0] * elapsedTime); 
-        
+	}
+	
+	private void bomb(int i, int j){
+		for(int k = i - 1; k < i + 2; k++){
+			for(int h = j - 1; h < j + 2; h++){
+				if(k > -1 & k < 10 & h > -1 & h < 10){
+					if(brick[k][h] != null){
+						myGroup.getChildren().remove(brick[k][h]);
+						brick[k][h] = null;
+					}
+				}
+			}
+		}
+	}
+	
+	private void lightning(int j){
+		for(int i = 0; i < 10; i++){
+			if(brick[i][j] != null){
+				myGroup.getChildren().remove(brick[i][j]);
+				brick[i][j] = null;
+			}
+		}
 	}
 	
 	private void nextLevel(){
@@ -176,6 +213,10 @@ public class RunGame extends Application {
         }
         else if (code == KeyCode.DIGIT3){
         	level = 1;
+        	nextLevel();
+        }
+        else if (code == KeyCode.R){
+        	level--;
         	nextLevel();
         }
     }
