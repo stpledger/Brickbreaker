@@ -10,6 +10,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -27,6 +29,7 @@ public class RunGame extends Application {
 	public static final String BRICK2_IMAGE = "brick3.gif";
 	public static final String BRICK3_IMAGE = "brick5.gif";
 	public static final String BRICK4_IMAGE = "brick10.gif";
+	public static final String FINISH_LINE = "finish_line.gif";
 
 	// values needed globally
 	private Scene[] myScenes = new Scene[3];
@@ -42,15 +45,20 @@ public class RunGame extends Application {
 	private Group myGroup;
 	private boolean hitHorizontal = false;
 	private boolean hitVertical = false;
-	private Image brick1i;
-	private Image brick2i;
-	private Image brick3i;
-	private Image brick4i;
+	private Image brick1i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK1_IMAGE));
+	private Image brick2i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK2_IMAGE));
+	private Image brick3i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK3_IMAGE));
+	private Image brick4i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK4_IMAGE));
+	private GameConstructor constructor = new GameConstructor();
+	private GameObject game = new GameObject();
+	private Text score;
+	private Text lives;
 	
 	
 	@Override
 	public void start (Stage stage){
 		myStage = stage;
+		game.reset();
 		myScenes[0] = setupGame(SIZE, SIZE, BACKGROUNDS[0]);
 		
 		myStage.setScene(myScenes[0]);
@@ -70,44 +78,63 @@ public class RunGame extends Application {
 		// to view the objects in the Scene
 		Scene scene = new Scene(myGroup, width, height, background);
 		// make shapes
-		Image image = new Image(getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE));
-		Image paddlei = new Image(getClass().getClassLoader().getResourceAsStream(paddle_IMAGE));
-		brick1i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK1_IMAGE));
-		brick2i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK2_IMAGE));
-		brick3i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK3_IMAGE));
-		brick4i = new Image(getClass().getClassLoader().getResourceAsStream(BRICK4_IMAGE));
-		Ball[0] = new ImageView(image);
-		Ball[1] = new ImageView(image);
-		paddle[0] = new ImageView(paddlei);
+		Image finish_lineI = new Image(getClass().getClassLoader().getResourceAsStream(FINISH_LINE));
+		ImageView finish_line = new ImageView(finish_lineI);
+		Ball[0] = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE)));
+		Ball[1] = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE)));
+		paddle[0] = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(paddle_IMAGE)));
 		
-		for (int i = 0; i < SIZE/70 ; i++){
+		int[][] layout = constructor.construct(0);
+		
+		for (int i = 0; i < 10 ; i++){
 			for(int j = 0; j < 10; j++){
-				if(i == 5 & j == 8){
-					brick[i][j] = new ImageView(brick2i);
-				}
-				else if(i == 5 & j == 6){
-					brick[i][j] = new ImageView(brick3i);
-				}
-				else{
+				switch (layout[i][j]){
+				case 1: 
 					brick[i][j] = new ImageView(brick1i);
+					break;
+				case 2:
+					brick[i][j] = new ImageView(brick2i);
+					break;
+				case 3:
+					brick[i][j] = new ImageView(brick3i);
+					break;
+				case 4:
+					brick[i][j] = new ImageView(brick4i);
+					break;
 				}
 				brick[i][j].setX(70 * i);
 				brick[i][j].setY(20 * j + 75);
 				myGroup.getChildren().add(brick[i][j]);
 			}
 		}
+		// setup score
+		Text scoreText = new Text(500, 30, "Score: ");
+		Text livesText = new Text(5, 30, "Lives Left: ");
+		score = new Text(565, 30, Integer.toString(game.getScore()));
+		lives = new Text(107, 30, Integer.toString(game.getLives()));
+		scoreText.setFont(new Font(20));
+		livesText.setFont(new Font(20));
+		score.setFont(new Font(20));
+		lives.setFont(new Font(20));
 		
 		// set locations of objects
 		paddle[0].setX(width / 2 - paddle[0].getBoundsInLocal().getWidth() / 2);
 		paddle[0].setY(SIZE - 75);
-		Ball[0].setX(width / 2 - Ball[0].getBoundsInLocal().getWidth() / 2 + 25);
+		Ball[0].setX(width / 2 - Ball[0].getBoundsInLocal().getWidth() / 2);
 		Ball[0].setY(height / 2 - Ball[0].getBoundsInLocal().getHeight() / 2);
+		finish_line.setX(0);
+		finish_line.setY(50);
 		// set ball starting velocity
-		Xvelocity[0] = 0; //random.nextInt(120) - 60;
+		Xvelocity[0] = random.nextInt(120) - 60;
 		Yvelocity[0] = 150;
 		// add objects to the group
 		myGroup.getChildren().add(Ball[0]);
 		myGroup.getChildren().add(paddle[0]);
+		myGroup.getChildren().add(finish_line);
+		myGroup.getChildren().add(scoreText);
+		myGroup.getChildren().add(livesText);
+		myGroup.getChildren().add(score);
+		myGroup.getChildren().add(lives);
 		// when input is detected
 		scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
         
@@ -125,14 +152,21 @@ public class RunGame extends Application {
     	// check for collision with paddle[0]
     	if (paddle[0].getBoundsInParent().intersects(Ball[0].getBoundsInParent())){
     		Yvelocity[0] = Yvelocity[0] * -1;
-    		//Xvelocity[0] = random.nextInt(280) - 140; 		
+    		Xvelocity[0] = random.nextInt(280) - 140; 		
     	}
     	// check for brick collision
     	brickCollision();
+    	// update score and lives
+    	update();
         // update attributes
         Ball[0].setX(Ball[0].getX() + Xvelocity[0] * elapsedTime);
         Ball[0].setY(Ball[0].getY() + Yvelocity[0] * elapsedTime); 
         
+	}
+	
+	private void update(){
+		score.setText(Integer.toString(game.getScore()));
+		lives.setText(Integer.toString(game.getLives()));
 	}
 	
 	private void brickCollision(){
@@ -154,10 +188,12 @@ public class RunGame extends Application {
     				    		lightning(j);
     				    	}
     				    	else if(brick[i][j].getImage() == brick4i){
+    				    		game.changeScore(-10);
     				    		myGroup.getChildren().remove(brick[i][j]);
     				    		brick[i][j] = null;
     				    	}
     				    	else{
+    				    		game.changeScore(10);
     				    		myGroup.getChildren().remove(brick[i][j]);
     				    		brick[i][j] = null;
     				    	}
@@ -183,6 +219,7 @@ public class RunGame extends Application {
 			for(int h = j - 1; h < j + 2; h++){
 				if(k > -1 & k < 10 & h > -1 & h < 10){
 					if(brick[k][h] != null){
+						game.changeScore(10);
 						myGroup.getChildren().remove(brick[k][h]);
 						brick[k][h] = null;
 					}
@@ -194,6 +231,7 @@ public class RunGame extends Application {
 	private void lightning(int j){
 		for(int i = 0; i < 10; i++){
 			if(brick[i][j] != null){
+				game.changeScore(10);
 				myGroup.getChildren().remove(brick[i][j]);
 				brick[i][j] = null;
 			}
@@ -228,6 +266,9 @@ public class RunGame extends Application {
         else if (code == KeyCode.R){
         	level--;
         	nextLevel();
+        }
+        else if(code == KeyCode.E){
+        	game.changeLives(5);
         }
     }
 	

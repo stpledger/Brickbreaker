@@ -7,13 +7,23 @@ public class GameConstructor {
 			case 0: 
 				for(int i = 0; i < 10; i++){
 					for(int j = 0; j < 10; j++){
-						if ((i * 10 + j) % 25 == 0){
+						if ((j == 3 | j == 7) & (i == 2 | i == 7)){
 							layout[i][j] = 3;
+						}
+						else if((j == 4 | j == 6) & (i == 3 | i == 6)){
+							layout[i][j] = 2;
+						}
+						else if((j * 10 + i) == 54 | (j * 10 + i) == 55){
+							layout[i][j] = 4;
+						}
+						else{
+							layout[i][j] = 1;
 						}
 					}
 				}
+				break;
 			
 		}
-		return null;
+		return layout;
 	}
 }
