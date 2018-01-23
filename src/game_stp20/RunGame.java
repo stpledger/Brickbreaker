@@ -4,6 +4,7 @@ import java.util.Random;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -17,12 +18,12 @@ import javafx.util.Duration;
 
 public class RunGame extends Application {
 	// values that won't change
-	public static final String TITLE = "Wall Ball";
-	public static final int SIZE = 700;
-	public static final int FRAMES_PER_SECOND = 60;
-	public static final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
-	public static final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
-	public static final Color[] BACKGROUNDS = {Color.rgb(170, 203, 255), Color.rgb(168, 219, 176), Color.rgb(196, 109, 109)};
+	public final String TITLE = "Wall Ball";
+	public final int SIZE = 700;
+	public final int FRAMES_PER_SECOND = 60;
+	public final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
+	public final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
+	public final Color[] BACKGROUNDS = {Color.rgb(170, 203, 255), Color.rgb(168, 219, 176), Color.rgb(196, 109, 109)};
 	private final Image brick1i = new Image(getClass().getClassLoader().getResourceAsStream("brick1.gif"));
 	private final Image brick2i = new Image(getClass().getClassLoader().getResourceAsStream("brick3.gif"));
 	private final Image brick3i = new Image(getClass().getClassLoader().getResourceAsStream("brick5.gif"));
@@ -34,6 +35,7 @@ public class RunGame extends Application {
 	private final Image paddlei = new Image(getClass().getClassLoader().getResourceAsStream("paddle.gif"));
 	private final Image paddle2i = new Image(getClass().getClassLoader().getResourceAsStream("paddle2.gif"));
 	private final Image balli = new Image(getClass().getClassLoader().getResourceAsStream("ball.gif"));
+	private final Image splashi = new Image(getClass().getClassLoader().getResourceAsStream("splash.png"));
 
 	// values needed globally
 	private Scene[] myScenes = new Scene[3];
@@ -58,6 +60,7 @@ public class RunGame extends Application {
 	private Text levelnum;
 	private Text score;
 	private Text lives;
+	private ImageView splash;
 	
 	@Override
 	public void start (Stage stage){
@@ -74,6 +77,8 @@ public class RunGame extends Application {
         animation.setCycleCount(Timeline.INDEFINITE);
         animation.getKeyFrames().add(frame);
         animation.play();
+        splash = new ImageView(splashi);
+        myGroup.getChildren().add(splash);
 	}
 	
 	private Scene setupGame(int width, int height, Color background){
@@ -87,7 +92,7 @@ public class RunGame extends Application {
 		paddle2 = new ImageView(paddle2i);
 		
 		
-		int[][] layout = constructor.construct(0);
+		int[][] layout = constructor.construct(level);
 		
 		for (int i = 0; i < 10 ; i++){
 			for(int j = 0; j < 10; j++){
@@ -176,6 +181,10 @@ public class RunGame extends Application {
     	}
     	if (Ball.getY() > 750){
     		game.changeLives(-1);
+    		if(game.getLives() == 0){
+    			level = 2;
+    			nextLevel();
+    		}
     		resetBall();
     	}
     	if (game.getBlocks() == 0){
@@ -256,7 +265,7 @@ public class RunGame extends Application {
 	private void releaseItem(int i, int j){
 		game.changeScore(20);
 		destroy(i, j);
-		int type = 3; //random.nextInt(2) + 1;
+		int type = random.nextInt(2) + 1;
 		switch(type){
 		case 1:
 			item = new ImageView(power1);
@@ -356,11 +365,17 @@ public class RunGame extends Application {
 	}
 	
 	private void nextLevel(){
-		
-		level++;
-		myScenes[level] = setupGame(SIZE, SIZE, BACKGROUNDS[level]);
-		myStage.setScene(myScenes[level]);
-		resetBall();
+		if (level == 2){
+			Text done = new Text(235, 400, "GAME OVER");
+			done.setFont(new Font(40));
+			myGroup.getChildren().add(done);
+		}
+		else{
+			level++;
+			myScenes[level] = setupGame(SIZE, SIZE, BACKGROUNDS[level]);
+			myStage.setScene(myScenes[level]);
+			resetBall();
+		}
 	}
 	
 	private void resetBall(){
@@ -399,10 +414,27 @@ public class RunGame extends Application {
         else if(code == KeyCode.E){
         	game.changeLives(5);
         }
+        else if(code == KeyCode.ENTER){
+        	if(splash != null){
+        		myGroup.getChildren().remove(splash);
+        		splash = null;
+        	}
+        }
         else if(code == KeyCode.SHIFT){
         	if(Ball.getY() == SIZE / 2 - Ball.getBoundsInLocal().getHeight() / 2){
         		Xvelocity[0] = random.nextInt(120) - 60;
-        		Yvelocity[0] = 150;
+        		switch (level){
+        		case 0:
+        			Yvelocity[0] = 150;
+        			break;
+        		case 1:
+        			Yvelocity[0] = 190;
+        			break;
+        		case 2:
+        			Yvelocity[0] = 230;
+        			break;
+        		}
+        		
         	}
         }
     }
