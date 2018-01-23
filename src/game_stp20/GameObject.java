@@ -1,5 +1,7 @@
 package game_stp20;
-
+/* 
+ * This class is used to manage the lives, score, and number of blocks left in a level
+ */
 public class GameObject {
 	private int score;
 	private int lives;

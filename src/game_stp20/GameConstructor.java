@@ -1,5 +1,7 @@
 package game_stp20;
-
+/*
+ * This class is used to construct the various levels
+ */
 public class GameConstructor {
 	public int[][] construct(int level){
 		int[][] layout = new int[10][10];

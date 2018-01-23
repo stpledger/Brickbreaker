@@ -4,7 +4,6 @@ import java.util.Random;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -24,6 +23,7 @@ public class RunGame extends Application {
 	public final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
 	public final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
 	public final Color[] BACKGROUNDS = {Color.rgb(170, 203, 255), Color.rgb(168, 219, 176), Color.rgb(196, 109, 109)};
+	private final int paddleSpeed = 20;
 	private final Image brick1i = new Image(getClass().getClassLoader().getResourceAsStream("brick1.gif"));
 	private final Image brick2i = new Image(getClass().getClassLoader().getResourceAsStream("brick3.gif"));
 	private final Image brick3i = new Image(getClass().getClassLoader().getResourceAsStream("brick5.gif"));
@@ -37,31 +37,42 @@ public class RunGame extends Application {
 	private final Image balli = new Image(getClass().getClassLoader().getResourceAsStream("ball.gif"));
 	private final Image splashi = new Image(getClass().getClassLoader().getResourceAsStream("splash.png"));
 
-	// values needed globally
+	// values needed across multiple methods
 	private Scene[] myScenes = new Scene[3];
+	
+	// objects that will change
 	private ImageView paddle;
 	private ImageView Ball;
 	private ImageView paddle2;
-	private int paddleSpeed = 20;
+	private ImageView item;
+	private ImageView splash;
+	private ImageView[][] brick = new ImageView[10][10];
+	
+	// numbers to keep track of
 	private int[] Xvelocity = new int[2];
 	private int[] Yvelocity = new int[2];
-	private Random random = new Random();
-	private Stage myStage;
 	private int level = 0;
-	private ImageView[][] brick = new ImageView[10][10];
-	private Group myGroup;
-	private boolean hitHorizontal = false;
-	private boolean hitVertical = false;
-	private GameConstructor constructor = new GameConstructor();
-	private GameObject game = new GameObject();
 	private long powerTime = 0;
 	private int powerType = 0;
-	private ImageView item;
+	
+	// random used multiple times across different methods
+	private Random random = new Random();
+	
+	// javafx window, necessary to modify in almost every method
+	private Stage myStage;
+	private Group myGroup;
+	
+	// game object used to keep game info in many methods
+	private GameObject game = new GameObject();
+	
+	// modify these text variables as opposed to reinitializing every step
 	private Text levelnum;
 	private Text score;
 	private Text lives;
-	private ImageView splash;
 	
+	/*
+	 * Initializing game
+	 */
 	@Override
 	public void start (Stage stage){
 		myStage = stage;
@@ -80,7 +91,9 @@ public class RunGame extends Application {
         splash = new ImageView(splashi);
         myGroup.getChildren().add(splash);
 	}
-	
+	/*
+	 * Setup scene based on level
+	 */
 	private Scene setupGame(int width, int height, Color background){
 		// to hold everything 
 		myGroup = new Group();
@@ -91,7 +104,7 @@ public class RunGame extends Application {
 		paddle = new ImageView(paddlei);
 		paddle2 = new ImageView(paddle2i);
 		
-		
+		GameConstructor constructor = new GameConstructor();
 		int[][] layout = constructor.construct(level);
 		
 		for (int i = 0; i < 10 ; i++){
@@ -128,7 +141,7 @@ public class RunGame extends Application {
 				}
 			}
 		}
-		// setup score
+		// setup text displays, less power required to initialize these once instead of holding as an instance variable array
 		Text scoreText = new Text(550, 30, "Score: ");
 		Text livesText = new Text(5, 30, "Lives Left: ");
 		Text levelText = new Text(300, 30, "Level: ");
@@ -148,7 +161,7 @@ public class RunGame extends Application {
 		Ball.setX(width / 2 - Ball.getBoundsInLocal().getWidth() / 2);
 		Ball.setY(height / 2 - Ball.getBoundsInLocal().getHeight() / 2);
 		
-		// add objects to the group
+		// add all objects to the group
 		myGroup.getChildren().add(Ball);
 		myGroup.getChildren().add(paddle);
 		myGroup.getChildren().add(scoreText);
@@ -206,7 +219,7 @@ public class RunGame extends Application {
     	if(item != null){
     		item.setY(item.getY() + 100 * elapsedTime);
     	}
-        // update attributes
+        // update ball velocity
         Ball.setX(Ball.getX() + Xvelocity[0] * elapsedTime);
         Ball.setY(Ball.getY() + Yvelocity[0] * elapsedTime); 
         
@@ -218,6 +231,9 @@ public class RunGame extends Application {
 	}
 	
 	private void brickCollision(){
+		boolean hitHorizontal = false;
+		boolean hitVertical = false;
+		
 		if(Ball.getY() < 300){
     		for (int i = 0; i < 10; i++){
     			for(int j = 0; j < 10; j++){
