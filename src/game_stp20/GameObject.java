@@ -46,4 +46,8 @@ public class GameObject {
 	public int getBlocks(){
 		return blocks;
 	}
+	
+	public void resetBlock(){
+		blocks = 0;
+	}
 }

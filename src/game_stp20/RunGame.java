@@ -104,6 +104,8 @@ public class RunGame extends Application {
 		paddle = new ImageView(paddlei);
 		paddle2 = new ImageView(paddle2i);
 		
+		game.resetBlock();
+		
 		GameConstructor constructor = new GameConstructor();
 		int[][] layout = constructor.construct(level);
 		
@@ -254,6 +256,7 @@ public class RunGame extends Application {
     				    	else if(brick[i][j].getImage() == brick4i){
     				    		game.changeScore(-10);
     				    		destroy(i, j);
+    				    		game.changeBlock(1);
     				    	}
     				    	else if(brick[i][j].getImage() == brick5i){
     				    		releaseItem(i, j);
@@ -399,6 +402,12 @@ public class RunGame extends Application {
 		Ball.setY(SIZE / 2 - Ball.getBoundsInLocal().getHeight() / 2);
 		Xvelocity[0] = 0;
 		Yvelocity[0] = 0;
+		if (powerType != 0 & (System.currentTimeMillis() - powerTime) / 1000 < 15){
+    		powerOff();
+    	}
+		else if (myGroup.getChildren().contains(item)){
+			myGroup.getChildren().remove(item);
+		}
 		item = null;
 	}
 	
